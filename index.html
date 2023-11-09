@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="计算巢是阿里云开放给企业应用服务商的服务管理平台。服务商能够在计算巢上发布私有化部署服务，为其客户提供云上软件一键部署的能力；同时也支持全托管模式的服务，赋能服务商托管其客户资源。">
+  <title>MetaGPT服务实例部署文档 - Aliyun 计算巢 x MetaGPT</title>
+
+  <link rel="shortcut icon" href="img/favicon.ico">
+
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+  <link rel="stylesheet" href="css/theme.css">
+  
+
+  
+
+  
+  
+
+  
+    <script src="search/main.js"></script>
+  
+
+  
+
+  <script src="js/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="logo">
+          <img src="./img/logo-2x.png">
+        </div>
+        <div class="nav-list">
+          <ul>
+          
+              <li><a href="#metagpt">MetaGPT服务实例部署文档</a></li>
+              
+                  <li><a href="#_1">概述</a></li>
+                  
+              
+                  <li><a href="#_2">说明</a></li>
+                  
+              
+                  <li><a href="#_3">部署流程</a></li>
+                  
+                      <li class="li-h3"><a href="#0">0. 准备工作</a></li>
+                  
+                      <li class="li-h3"><a href="#1">1. 部署入口</a></li>
+                  
+                      <li class="li-h3"><a href="#2-metagpt">2. 创建MetaGPT服务实例</a></li>
+                  
+                      <li class="li-h3"><a href="#3-metagpt">3. 启动MetaGPT服务</a></li>
+                  
+              
+          
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content theme-github">
+      
+      <div class="content-inner">        
+        
+        <h1 id="metagpt">MetaGPT服务实例部署文档</h1>
+<h2 id="_1">概述</h2>
+<p>MetaGPT是一个基于大语言模型（LLM）的框架，仅需输入一句话的需求，MetaGPT便可输出用户故事 / 竞品分析 / 需求 / 数据结构 / APIs / 文件等。MetaGPT内部包括产品经理 / 架构师 / 项目经理 / 工程师，它提供了一个软件公司的全过程与精心调配的SOP。
+计算巢目前已上架了基于开源代码的MetaGPT，您只需在创建页选配好云服务器（ECS）参数，计算巢将自动为您创建带有MetaGPT的云服务器。创建完成后，您只需登陆ECS即可使用MetaGPT。本文向您介绍如何开通计算巢上的MetaGPT服务以及部署流程和使用说明。使用期间若发现任何问题，欢迎反馈交流。</p>
+<h2 id="_2">说明</h2>
+<ul>
+<li>MetaGPT部署的为社区开源版本，源码参考<a href="https://github.com/geekan/MetaGPT">Github Repo</a>。</li>
+<li>本服务需要依赖OpenAI GPT-4 API，请提前准备您的OpenAI Key。</li>
+</ul>
+<h2 id="_3">部署流程</h2>
+<h3 id="0">0. 准备工作</h3>
+<p>在正式开始使用前，您需要一个阿里云账号，对ECS、VPC等资源进行访问和创建操作。</p>
+<ul>
+<li>若您使用个人账号，可以直接创建服务实例</li>
+<li>若您使用RAM用户创建服务实例，且是第一次使用阿里云计算巢<ul>
+<li>需要在创建服务实例前，对使用的RAM用户的账号添加相应资源的权限。添加RAM权限的详细操作，请参见<a href="https://help.aliyun.com/document_detail/121945.html">为RAM用户授
+  权</a>。所需权限如下表所示。</li>
+<li>且需要授权创建关联角色，参考下图，选中 <strong>同意授权并创建关联角色</strong></li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>权限策略名称</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AliyunECSFullAccess</td>
+<td>管理云服务器服务（ECS）的权限</td>
+</tr>
+<tr>
+<td>AliyunVPCFullAccess</td>
+<td>管理专有网络（VPC）的权限</td>
+</tr>
+<tr>
+<td>AliyunROSFullAccess</td>
+<td>管理资源编排服务（ROS）的权限</td>
+</tr>
+<tr>
+<td>AliyunComputeNestUserFullAccess</td>
+<td>管理计算巢服务（ComputeNest）的用户侧权限</td>
+</tr>
+<tr>
+<td>AliyunCloudMonitorFullAccess</td>
+<td>管理云监控（CloudMonitor）的权限</td>
+</tr>
+</tbody>
+</table>
+<p>其次，由于MetaGPT底层调用了OPENAI的大模型GPT-4，因此还需要您提前注册OPENAI的账号，此账号具有调用GPT-4的权限。</p>
+<h3 id="1">1. 部署入口</h3>
+<p>您可以在阿里云计算巢自行搜索“MetaGPT 多智能体框架社区版”，也可以通过下述部署链接快速到达。</p>
+<p><a href="https://computenest.console.aliyun.com/user/cn-hangzhou/serviceInstanceCreate?ServiceId=service-8b04daf2d1ef43938199">部署链接</a></p>
+<h3 id="2-metagpt">2. 创建MetaGPT服务实例</h3>
+<h4 id="21">2.1 参数列表</h4>
+<p>您在创建服务实例的过程中，需要配置服务实例信息的参数列表，具体如下。</p>
+<table>
+<thead>
+<tr>
+<th>参数组</th>
+<th>参数项</th>
+<th>示例</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>服务实例名称</td>
+<td>N/A</td>
+<td>test</td>
+<td>实例的名称</td>
+</tr>
+<tr>
+<td>地域</td>
+<td>N/A</td>
+<td>华东1（杭州）</td>
+<td>选中服务实例的地域，建议就近选中，以获取更好的网络延时。</td>
+</tr>
+<tr>
+<td>付费类型配置</td>
+<td>付费类型</td>
+<td>按量付费</td>
+<td>按实际情况选择付费类型</td>
+</tr>
+<tr>
+<td>ECS实例配置</td>
+<td>实例类型</td>
+<td>ecs.g6.large</td>
+<td>按实际情况选择实例规格</td>
+</tr>
+<tr>
+<td>ECS实例登录信息</td>
+<td>实例密码</td>
+<td><strong><em>*</em></strong>*</td>
+<td>设置实例密码。长度8~30个字符，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&amp;*_-+={}[]:;'&lt;&gt;,.?/</td>
+</tr>
+<tr>
+<td>OPENAI配置</td>
+<td>OPENAIKey</td>
+<td>sk-xxx</td>
+<td>OPENAI 密钥，使用MetaGPT将从密钥对应账户扣费，此密钥由OPENAI提供，阿里云不对此密钥做任何处理。默认模型使用GPT-4，登陆访问 <a href="https://openai.com/">OpenAI 官网</a>。</td>
+</tr>
+<tr>
+<td>可用区配置</td>
+<td>可用区</td>
+<td>可用区I</td>
+<td>地域下的不同可用区域，确保实例非空</td>
+</tr>
+<tr>
+<td>VPC设置</td>
+<td>是否新建VPC</td>
+<td>是</td>
+<td>若是，计算巢将自动创建VPC和Vswitch，若否，则需要填入已经创建好的VPC和Vswitch</td>
+</tr>
+<tr>
+<td>VPC设置</td>
+<td>专有网络VPC实例ID</td>
+<td>vpc-xxx</td>
+<td>按实际情况，选择专有网络的ID。</td>
+</tr>
+<tr>
+<td>VPC设置</td>
+<td>交换机实例ID</td>
+<td>vsw-xxx</td>
+<td>按实际情况，选择交换机ID。若找不到交换机, 可尝试切换地域和可用区。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="22">2.2 具体步骤</h4>
+<p>创建服务按如下步骤进行，参考下图：</p>
+<ul>
+<li>创建实例名称，非必填</li>
+<li>选择地域，如下图中“新加坡”</li>
+</ul>
+<p><img alt="2-1.jpg" src="2-1.jpg" /></p>
+<ul>
+<li>选择实例类型: 默认选择ecs.g6.large</li>
+<li>配置实例的密码</li>
+</ul>
+<p><img alt="2-2.jpg" src="2-2.jpg" /></p>
+<ul>
+<li>OPENAIKey：输入OPENAI账号所对应的OPENAIKey，格式为“sk-……”。计算巢仅将此OPENAIKey传入MetaGPT作为调用API凭证，不会执行如记录、校验、鉴权等任何操作。为保证后续正常使用，请保证此Key所对应账号具有访问权限且余额充足。</li>
+<li>选择部署区域，如下图中“可用区A”</li>
+<li>VPC设置：可选新建或填入已有VPC/Vswitch</li>
+</ul>
+<p><img alt="2-3.jpg" src="2-3.jpg" /></p>
+<ul>
+<li>点击下一步，进入订单确认页面</li>
+<li>勾选“我已阅读并同意《计算巢服务协议》”中的复选框</li>
+<li>点击左下角立即创建，即可创建服务实例</li>
+</ul>
+<p><img alt="2-4.jpg" src="2-4.jpg" />
+<img alt="2-5.jpg" src="2-5.jpg" /></p>
+<h3 id="3-metagpt">3. 启动MetaGPT服务</h3>
+<ul>
+<li>查看服务实例：服务实例创建成功后，部署时间需要1～2分钟。部署完成后，页面上可以看到对应的服务实例，如下图</li>
+</ul>
+<p><img alt="3-1.jpg" src="3-1.jpg" /></p>
+<ul>
+<li>点击该服务实例可进入服务实例详情。</li>
+</ul>
+<p><img alt="3-2.jpg" src="3-2.jpg" /></p>
+<ul>
+<li>由于MetaGPT为命令行执行，因此需要登录Ecs中，点击：资源-远程连接-免密登陆：</li>
+</ul>
+<p><img alt="3-3.png" src="3-3.png" /></p>
+<ul>
+<li>选择公网-输入密码后，即可进入Ecs：</li>
+</ul>
+<p><img alt="3-4.png" src="3-4.png" /></p>
+<ul>
+<li>
+<p>进入后默认为root根目录：输入命令进入metagpt文件夹： cd metagpt/
+<img alt="3-5.png" src="3-5.png" /></p>
+</li>
+<li>
+<p>执行如命令： python startup.py "写一个命令行贪吃蛇", 即可调用MetaGPT</p>
+</li>
+</ul>
+<p><img alt="3-6.png" src="3-6.png" /></p>
+<p>更多功能请参考<a href="https://github.com/geekan/MetaGPT/blob/main/docs/README_CN.md">MetaGPT使用文档</a></p>
+        
+      </div>
+
+      <div class="copyrights">© 2009-2022 Aliyun.com 版权所有</div>
+    </div>
+  </div>
+  
+  <!--
+  MkDocs version      : 1.5.3
+  Docs Build Date UTC : 2023-11-09 11:51:39.460450+00:00
+  -->
+</body>
+</html>
